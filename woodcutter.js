@@ -2,8 +2,8 @@ var botname = "XenosWoodCutterBot";
 
 var blocksBetweenTrees = 5;
 
-var farmLength = 2;
-var farmWidth = 2;
+var farmLength = 16;
+var farmWidth = 14;
 
 var treeType = "birch";
 

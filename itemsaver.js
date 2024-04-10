@@ -1,35 +1,7 @@
 
 var threshold = 10;
 
-var getEmptyInventorySpace = function() {
-  var inv = Player.openInventory();
-  var slots = inv.getMap();
-  for (var slot in slots["main"]) {
-
-    // skip armor slots
-    if (slot >= 0 && slot <= 8 && slot != 45)
-      continue;
-    item = inv.getSlot(slot)
-    if (!item.getItemId().includes("pickaxe"))
-      return slot;
-  }
-  return -1;
-}
-
-var findItemSlot = function() {
-  var inv = Player.openInventory();
-  var slots = inv.getMap();
-  for (var slot in slots["main"]) {
-
-    // skip armor slots
-    if (slot >= 0 && slot <= 8 && slot != 45)
-      continue;
-    item = inv.getSlot(slot)
-    if (!item.getItemId().includes("pickaxe"))
-      return slot;
-  }
-  return -1;
-}
+const { selectItem } = require('./lib/inventoryUtils.js');
 
 var item = event.item;
 
@@ -39,11 +11,6 @@ if (!item.isWearable() == true) {
 
   if (curDamage <= threshold) {
     Chat.log("Item saved!");
-    var inv = Player.openInventory();
-    var emptySlot = getEmptyInventorySpace();
-    var curSlot = inv.getSelectedHotbarSlotIndex();
-
-    if (emptySlot >= 0 && curSlot >= 0)
-      inv.swapHotbar(emptySlot, curSlot);
+    selectItem(item.getItemID(), true, threshold);
   }
 }
