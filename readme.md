@@ -9,6 +9,13 @@ Most bots are toggleable - this means the first execute should start the bot and
 
 Most bots have configuration options at the beginning of the file. Do not edit anything below the "DO NOT TOUCH" Marker.
 
+## Itemsaver
+
+itemsaver.js
+
+this is not a bot. It is a EventHandler (for the ItemDamage Event) which ensures to switch your tool to a tool with durability.
+Works great with other bots.
+
 ## Woodcutter
 
 woodcutter.js.
