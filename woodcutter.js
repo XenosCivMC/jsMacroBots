@@ -1,18 +1,18 @@
 var botname = "XenosWoodCutterBot";
 
-var blocksBetweenTrees = 5;
+var blocksBetweenTrees = 4;
 
-var farmLength = 16;
-var farmWidth = 14;
+var farmLength = 13;
+var farmWidth = 13;
 
-var treeType = "birch";
+var treeType = "spruce";
 
 // time to break a log in ticks
 // stone axe is roughly 21
 var chopTime = 21;
 //
 // if this is set to true the player will drop the resources into a water chute.
-var doDropResources = true;
+var doDropResources = false;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // DO NOT TOUCH
@@ -27,21 +27,27 @@ function cutTree(goalPosition) {
   var doJump = true;
   if (treeType == "birch")
     doJump = false;
-  selectItem("_axe");
+  selectItem("_axe", true, 10);
   // walk to the tree while swinging
-  while ((getDistance(currentPos, goalPosition) > 0.3) && isRunning(botname)) {
+  while ((getDistance(currentPos, goalPosition) > 0.1) && isRunning(botname)) {
     KeyBind.key("key.mouse.left", true);
     KeyBind.keyBind('key.forward', true);
-    player.lookAt(goalPosition.x, goalPosition.y, goalPosition.z);
+    KeyBind.keyBind('key.sneak', true);
+    player.lookAt(goalPosition.x, goalPosition.y + 0.5, goalPosition.z);
 
     Client.waitTick(1);
+    if (!isRunning(botname))
+      return;
     currentPos = player.getPos();
   }
   KeyBind.keyBind('key.forward', false);
+  KeyBind.keyBind('key.sneak', false);
   // To be at that specific position the player must already have broken the 2 lower blocks.
   // Look up and break as much blocks as possible
   player.lookAt(0, -90);
   Client.waitTick(toolTime * 6);
+  if (!isRunning(botname))
+    return;
   if (doJump) {
     // look down, place a block
     selectItem("log");
@@ -61,15 +67,19 @@ function cutTree(goalPosition) {
     // look down and break placed block
     player.lookAt(0, 90);
     Client.waitTick(toolTime);
+    KeyBind.key("key.mouse.left", false);
+    Client.waitTick(10);
   }
   // look down and place sapling
-  Client.waitTick(1);
+  Client.waitTick(3);
   player.lookAt(0, 90);
-  Client.waitTick(1);
+  Client.waitTick(3);
   selectItem("sapling");
+  Client.waitTick(3);
   KeyBind.key("key.mouse.right", true);
+  Client.waitTick(3);
   KeyBind.key("key.mouse.right", false);
-  Client.waitTick(1);
+  Client.waitTick(5);
 
 }
 
@@ -96,20 +106,20 @@ function lumberjackLoop() {
   // TODO: this if statement ... needs work.
   // when the player gets to the end of the line turn and go back
   if (
-    ((primaryDir.x != 0) && (currentPrimaryDir.x == primaryDir.x) && (startingPos.x == trueStartingPos.x + (blocksBetweenTrees * currentPrimaryDir.x * (farmLength - 1))))
+    ((primaryDir.x != 0) && (currentPrimaryDir.x == primaryDir.x) && (startingPos.x == trueStartingPos.x + ((blocksBetweenTrees + 1) * currentPrimaryDir.x * (farmLength - 1))))
     || ((primaryDir.x != 0) && (currentPrimaryDir.x != primaryDir.x) && (startingPos.x == trueStartingPos.x))
-    || ((primaryDir.z != 0) && (currentPrimaryDir.z == primaryDir.z) && (startingPos.z == trueStartingPos.z + (blocksBetweenTrees * currentPrimaryDir.z * (farmLength - 1))))
+    || ((primaryDir.z != 0) && (currentPrimaryDir.z == primaryDir.z) && (startingPos.z == trueStartingPos.z + ((blocksBetweenTrees + 1) * currentPrimaryDir.z * (farmLength - 1))))
     || ((primaryDir.z != 0) && (currentPrimaryDir.z != primaryDir.z) && (startingPos.z == trueStartingPos.z))
   ) {
     // take a "step" to the secondary Direction
-    goalPosition.x += (blocksBetweenTrees * secondaryDir.x);
-    goalPosition.z += (blocksBetweenTrees * secondaryDir.z);
+    goalPosition.x += ((blocksBetweenTrees + 1) * secondaryDir.x);
+    goalPosition.z += ((blocksBetweenTrees + 1) * secondaryDir.z);
     // negate direction
     currentPrimaryDir.x *= -1;
     currentPrimaryDir.z *= -1;
   } else {
-    goalPosition.x += (blocksBetweenTrees * currentPrimaryDir.x);
-    goalPosition.z += (blocksBetweenTrees * currentPrimaryDir.z);
+    goalPosition.x += ((blocksBetweenTrees + 1) * currentPrimaryDir.x);
+    goalPosition.z += ((blocksBetweenTrees + 1) * currentPrimaryDir.z);
   }
 
   cutTree(goalPosition);
@@ -121,14 +131,14 @@ function lumberjackLoop() {
 
   } // if the player is here the script should finish
   var ultimateGoalPosition = { ...trueStartingPos };
-  ultimateGoalPosition.x += ((farmWidth - 1) * blocksBetweenTrees) * secondaryDir.x;
-  ultimateGoalPosition.z += ((farmWidth - 1) * blocksBetweenTrees) * secondaryDir.z;
+  ultimateGoalPosition.x += ((farmWidth - 1) * (blocksBetweenTrees + 1)) * secondaryDir.x;
+  ultimateGoalPosition.z += ((farmWidth - 1) * (blocksBetweenTrees + 1)) * secondaryDir.z;
 
   // if farmLength is uneven ultimateGoal must be at the end of the line
   // because of alternating paths
   if (farmWidth % 2 == 1) {
-    ultimateGoalPosition.x += ((farmLength - 1) * blocksBetweenTrees) * primaryDir.x;
-    ultimateGoalPosition.z += ((farmLength - 1) * blocksBetweenTrees) * primaryDir.z;
+    ultimateGoalPosition.x += ((farmLength - 1) * (blocksBetweenTrees + 1)) * primaryDir.x;
+    ultimateGoalPosition.z += ((farmLength - 1) * (blocksBetweenTrees + 1)) * primaryDir.z;
   }
 
   if (getDistance(currentPos, ultimateGoalPosition) < 0.3) {
@@ -161,6 +171,6 @@ while (isRunning(botname)) {
   lumberjackLoop();
   Client.waitTick(1);
   if (!isRunning(botname)) {
-    cleanup();
+    cleanup(botname);
   }
 }
