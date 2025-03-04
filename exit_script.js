@@ -11,4 +11,5 @@ KeyBind.key("key.mouse.right", false);
 KeyBind.key("key.mouse.left", false);
 Hud.clearDraw3Ds();
 Hud.clearDraw2Ds();
+JsMacros.disableAllListeners()
 Chat.log("Exited all scripts");
