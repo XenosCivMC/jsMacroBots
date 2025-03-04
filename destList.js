@@ -1,5 +1,6 @@
 // Config
 const dests = [
+  { name: "Felsenheim", dest: "imperial priderock felsenheim" },
   { name: "Priderock", dest: "imperial priderock" },
   { name: "New Callisto", dest: "imperial newcallisto" },
   { name: "Regensburg", dest: "imperial regensburg" },
