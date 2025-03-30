@@ -1,4 +1,4 @@
-// v0.2.0alpha
+// v0.2.1-alpha
 
 // Config
 const favorites = [
@@ -77,7 +77,7 @@ const listener = JsMacros.on(
         btns = [];
         let foundStation = data.stations;
         if (search)
-          foundStation = data.stations.filter(station => station.name.startsWith(search));
+          foundStation = data.stations.filter(station => station.name.toLowerCase().includes(search.toLowerCase()));
         if (foundStation)
           btns = createButtons(foundStation);
       })
