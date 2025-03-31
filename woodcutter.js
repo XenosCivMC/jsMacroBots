@@ -14,10 +14,12 @@ var botname = "XenosWoodCutterBot";
 // var blocksBetweenTrees = 3;
 
 // regensburg
-var farmLength = 19;
-var farmWidth = 19;
+var farmLength = 24;
+var farmWidth = 24;
 var treeType = "birch";
 var blocksBetweenTrees = 6;
+
+var doPlantSapling = false;
 
 // time to break a log in ticks
 // stone axe is roughly 21
@@ -83,16 +85,18 @@ function cutTree(goalPosition) {
     Client.waitTick(10);
   }
   // look down and place sapling
-  Chat.log("place sapling");
-  Client.waitTick(5);
-  player.lookAt(0, 90);
-  Client.waitTick(5);
-  selectItem("sapling");
-  Client.waitTick(5);
-  KeyBind.key("key.mouse.right", true);
-  Client.waitTick(5);
-  KeyBind.key("key.mouse.right", false);
-  Client.waitTick(5);
+  if (doPlantSapling) {
+    KeyBind.key("key.mouse.left", false);
+    Client.waitTick(5);
+    player.lookAt(0, 90);
+    Client.waitTick(5);
+    selectItem("sapling");
+    Client.waitTick(5);
+    KeyBind.key("key.mouse.right", true);
+    Client.waitTick(5);
+    KeyBind.key("key.mouse.right", false);
+    Client.waitTick(5);
+  }
 
 }
 
