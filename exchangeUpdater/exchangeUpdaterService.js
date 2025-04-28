@@ -1,11 +1,16 @@
+// v0.1.0-alpha
+
+// Config
+const DISCORD_WEBHOOK_URL = "";
+
+/**********************************************************************/
 
 const SERVICE_NAME = event.serviceName;
-const TRADE_OUTPUT_FILE = "trades.txt";
-const CTI_MODE_CHANGE_PART = "Toggled reinforcement information mode ";
 
 const guiScreen = Hud.createScreen("Trade GUI", false);
 
 let ctiMode = false;
+let include_out_of_stock = true;
 
 let shopEntry = {};
 let entryStarted;
@@ -29,11 +34,11 @@ let entryList = [];
 function isComplete() {
   let keys = ["page", "input", "output", "position", "exchanges"];
 
-  // Chat.log(Time.time() - entryStarted);
   if ((Time.time() - entryStarted) > 300)
     return false;
   return keys.every(key => key in shopEntry);
 }
+
 function sendIfComplete() {
   if (!shopEntry.compacted) shopEntry.compacted = false;
   if (isComplete()) {
@@ -48,17 +53,14 @@ function sendIfComplete() {
       entryList[idx] = shopEntry;
     else
       entryList.push(shopEntry);
+    Chat.log(`Exchange updated: ${shopEntry.input.item}`);
     shopEntry = {};
-    Chat.log(entryList.length);
   }
-  // Chat.log(isComplete(entry));
-
 }
 
 function HandleReader(recvMessageEvent) {
   let msgJson = JSON.parse(recvMessageEvent.text.getJson()) // get formatted message from the event
   let msgString = recvMessageEvent.text.getString();
-
 
   let match;
   if (match = msgString.match(/Toggled reinforcement information mode ((off)|(on))/)) {
@@ -66,38 +68,32 @@ function HandleReader(recvMessageEvent) {
     Chat.log(ctiMode);
   }
   else if (match = msgString.match(/\((\d+)\/(\d+)\) exchanges present\./)) {
-    // Chat.log("create shop obj " + match[1] + " von " + match[2]);
     entryStarted = Time.time();
     shopEntry = {};
     shopEntry.page = match[1];
     shopEntry.maxPage = match[2];
   }
   else if (match = msgString.match(/Input: (\d+) (.+)/)) {
-    // Chat.log("input: " + match[1] + " | " + match[2]);
     shopEntry.input = {
       count: match[1],
       item: match[2]
     };
   }
-  // TODO: something something compacted
   else if (match = msgString.match(/Compacted/)) {
     shopEntry.compacted = true;
   }
   else if (match = msgString.match(/Output: (\d+) (.+)/)) {
-    // Chat.log("output: " + match[1] + " | " + match[2]);
     shopEntry.output = {
       count: match[1],
       item: match[2]
     };
   }
   else if (match = msgString.match(/(\d+) exchanges? available\./)) {
-    // Chat.log("available: " + match[1]);
     shopEntry.exchanges = match[1];
     sendIfComplete();
   }
   else if (match = msgString.match(/Reinforced at (.+)%/)) {
     let match2 = (msgJson.hoverEvent.contents).match(/Location: (.+) (.+) (.+)/);
-    // Chat.log(match2[1] + "|" + match2[2] + "|" + match2[3]);
     shopEntry.position = {
       x: match2[1],
       y: match2[2],
@@ -107,6 +103,25 @@ function HandleReader(recvMessageEvent) {
   }
 }
 
+function getShopText() {
+  let shopText = "";
+  let tempEntryList = entryList.slice();
+  if (!include_out_of_stock)
+    tempEntryList = tempEntryList.filter(entry => entry.exchanges != 0);
+  tempEntryList.forEach((entry, idx) => {
+    let availableString = `(${entry.exchanges} available)`.padEnd(15);
+    let inputString = `${entry.input.count} ${entry.input.item}`/* .padEnd(50) */;
+    let outputString = `${entry.output.count} ${entry.output.item}`/* .padEnd(50) */;
+    let entryText = `${availableString} ${inputString}`;
+    shopText += `${entryText} -> ${outputString}\\n`
+  });
+  shopText = `\`\`\`${shopText}\`\`\``;
+  shopText = shopText.replaceAll("\\\"", "");
+  shopText = shopText.replaceAll("\"", "");
+
+  return shopText;
+}
+
 function screenInit(screen) {
   const offsetX = 50;
   const offsetY = 50;
@@ -114,17 +129,12 @@ function screenInit(screen) {
   const componentHeight = 16;
   const componentSpace = 2;
 
-  let shopText = "";
 
   entryList.forEach((entry, idx) => {
-    Chat.log(entry.input);
-
-    // let entryText = entry.input.item + " -> " + entry.output.item;
     let availableString = `(${entry.exchanges} available)`.padEnd(15);
     let inputString = `${entry.input.count} ${entry.input.item}`/* .padEnd(50) */;
     let outputString = `${entry.output.count} ${entry.output.item}`/* .padEnd(50) */;
     let entryText = `${availableString} ${inputString}`;
-    shopText += `${entryText} -> ${outputString}\\n`
 
     screen.addText(
       entryText,
@@ -142,25 +152,53 @@ function screenInit(screen) {
     );
   });
 
-  shopText = `\`\`\`${shopText}\`\`\``;
-  shopText = shopText.replaceAll("\\\"", "");
-  shopText = shopText.replaceAll("\"", "");
-  Chat.log(shopText.length);
   screen.addButton(
     offsetX + 17 + componentHeight, 400,
+    200, componentHeight,
+    -1,
+    "Copy",
+    JavaWrapper.methodToJava(() => {
+      let shopText = getShopText();
+      shopText = shopText.replaceAll("\\n", "\n");
+      console.log(shopText);
+      Utils.copyToClipboard(shopText);
+      screen.close();
+    })
+  )
+
+  screen.addButton(
+    offsetX + 17 + componentHeight + 210, 400,
     200, componentHeight,
     -1,
     "Send it to Discord",
     JavaWrapper.methodToJava(() => {
 
+      let shopText = getShopText();
+      if (DISCORD_WEBHOOK_URL) {
       let answere = Request.post(
-        "https://discord.com/api/webhooks/1356231555428909197/tdC_5lMDbuWgQQRDUUAEOIJDmBqHsjew5cxHS7-TLJZCS3SW3SPQuftEOXrKSLFdgYym",
+        DISCORD_WEBHOOK_URL,
         `{"content": "${shopText}"}`,
         { "Content-Type": "application/json" }
       );
+      }
+      else {
+        Chat.log("No Webhook url set!");
+      }
+      screen.close();
+    })
+  )
+
+  screen.addCheckbox(
+    offsetX + 17 + componentHeight, 400 + componentHeight + 10,
+    200, componentHeight,
+    "Include out of stock", include_out_of_stock,
+    JavaWrapper.methodToJava(() => {
+      include_out_of_stock = !include_out_of_stock;
     })
   )
 }
+
+
 
 guiScreen.setOnInit(JavaWrapper.methodToJava(screenInit));
 
@@ -176,4 +214,4 @@ function startReader() {
 }
 
 startReader();
-GlobalVars.putObject("TradeGuiScreen", guiScreen);
+GlobalVars.putObject("exchangeUpdaterGuiScreen", guiScreen);
