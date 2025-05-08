@@ -2,7 +2,10 @@
 
 // Config
 const favorites = [
-  "Pride Rock", "New Callisto (Capital)"
+  "Pride Rock",
+  "New Callisto (Capital)",
+   {"name": "Felsenheim", "dest": "imperial priderock felsenheim"},
+   {"name": "Zoryawa", "dest": "anisso zoryawa"},
 ]
 
 const buttonWidth = 140;
@@ -49,6 +52,7 @@ const listener = JsMacros.on(
     // Favorites
     Hud.getOpenScreen().addText("Favorites:", 500, 20, 0xffffff, true);
     let favoriteDests = data.stations.filter(station => favorites.includes(station.name));
+    favoriteDests.push(...favorites.filter(item => typeof item === 'object' && item !== null));
     for (let i = 0; i < favoriteDests.length; i++) {
       let dest = favoriteDests[i];
       let btn = Hud.getOpenScreen().addButton(
@@ -63,7 +67,7 @@ const listener = JsMacros.on(
         })
       );
     }
-
+    // Search
     Hud.getOpenScreen().addTextInput(
       buttonSpaceX,
       buttonSpaceY,
