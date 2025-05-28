@@ -1,4 +1,4 @@
-// v0.2.1-alpha
+// v0.3.0-alpha
 
 // Config
 const favorites = [
@@ -8,6 +8,8 @@ const favorites = [
    {"name": "Zoryawa", "dest": "anisso zoryawa"},
 ]
 
+const SOURCE_URL = "https://raw.githubusercontent.com/XenosCivMC/IF-data/refs/heads/main/railstations.json";
+
 const buttonWidth = 140;
 const buttonHeight = 15;
 const buttonSpaceX = 3;
@@ -16,7 +18,7 @@ const buttonOffsetY = 30;
 const buttonMaxLines = 12;
 
 /**********************************************************************/
-let data = Request.get("https://raw.githubusercontent.com/XenosCivMC/IF-data/refs/heads/main/railstations.json").text();
+let data = Request.get(SOURCE_URL).text();
 data = JSON.parse(data);
 
 let createButtons = function(stations) {
