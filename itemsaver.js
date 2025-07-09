@@ -1,49 +1,39 @@
 
 var threshold = 10;
-let items = [
+const items = [
   "minecraft:golden_pickaxe",
-  "minecraft:stone_axe"
-]
+  "minecraft:stone_axe",
+  "minecraft:shears"
+];
 
-const { selectItem } = require('./lib/inventoryUtils.js');
 const SERVICE_NAME = event.serviceName;
-// var item = event.item;
-//
-// // I dont care about armor
-// if (!item.isWearable() == true) {
-//   var curDamage = item.getMaxDamage() - event.damage;
-//
-//   if (curDamage <= threshold) {
-//     Chat.log("Item saved!");
-//     selectItem(item.getItemID(), true, threshold);
-//   }
-// f
-let itemSaverEventHandler = function(event) {
-  let item = event.item;
+
+const itemSaverEventHandler = function(event) {
+  const item = event.item;
   // Chat.log(event.item)
   // Chat.log(event.oldItem)
-  let itemName = event.item.getItemId().toLowerCase();
+  const itemName = event.item.getItemId().toLowerCase();
   if (items.includes(itemName)) {
-    let curDamage = item.getMaxDamage() - item.getDamage();
+    const curDamage = item.getMaxDamage() - item.getDamage();
     if (curDamage <= threshold) {
       // let player = Player.getPlayer();
-      let inv = Player.openInventory();
-      let curSlot = inv.getSelectedHotbarSlotIndex() + 36;
+      const inv = Player.openInventory();
+      const curSlot = inv.getSelectedHotbarSlotIndex() + 36;
       for (const foundItemSlot of inv.findItem(itemName)) {
         if (foundItemSlot == curSlot)
           continue;
-        let foundItem = inv.getSlot(foundItemSlot);
-        let foundItemDmg = foundItem.getMaxDamage() - foundItem.getDamage();
+        const foundItem = inv.getSlot(foundItemSlot);
+        const foundItemDmg = foundItem.getMaxDamage() - foundItem.getDamage();
 
         if (foundItemDmg <= threshold) {
           KeyBind.keyBind('key.forward', false);
           KeyBind.keyBind('key.jump', false);
           KeyBind.keyBind('key.sneak', false);
-          inv.swap(curSlot, 1)
+          inv.swap(curSlot, 1);
           Client.waitTick(5);
-          inv.swap(foundItemSlot, 2)
+          inv.swap(foundItemSlot, 2);
           Client.waitTick(5);
-          inv.swap(0, curSlot)
+          inv.swap(0, curSlot);
           Client.waitTick(5);
           return;
         }
@@ -55,17 +45,17 @@ let itemSaverEventHandler = function(event) {
         KeyBind.keyBind('key.forward', false);
         KeyBind.keyBind('key.jump', false);
         KeyBind.keyBind('key.sneak', false);
-        inv.swap(curSlot, foundItemSlot)
+        inv.swap(curSlot, foundItemSlot);
       }
 
     }
   }
-}
+};
 
 
 
 Chat.log(`STARTING ${SERVICE_NAME}`);
-let listener = JsMacros.on('HeldItemChange', JavaWrapper.methodToJava(itemSaverEventHandler));
+const listener = JsMacros.on('HeldItemChange', JavaWrapper.methodToJava(itemSaverEventHandler));
 
 event.stopListener = JavaWrapper.methodToJava(() => { // clean up service
   JsMacros.off(listener);
