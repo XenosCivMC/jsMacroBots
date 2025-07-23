@@ -79,6 +79,7 @@ function cleanup() {
   * Drops specific resources on the ground (or in a water drop chute)
   */
 function dropResources() {
+  const inv = Player.openInventory();
   // skip if bot is already aborted
   if (!isRunning(botname))
     return;
@@ -98,6 +99,7 @@ function dropResources() {
     }
   }
   Client.waitTick(1);
+  inv.close();
 }
 
 /** 
@@ -173,7 +175,6 @@ function farm() {
 }
 
 
-const inv = Player.openInventory();
 const player = Player.getPlayer();
 const trueStartingPos = getCenterPosition(player.getPos());
 var startingPos = getCenterPosition(player.getPos());
