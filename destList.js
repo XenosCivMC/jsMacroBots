@@ -5,6 +5,7 @@ const favorites = [
   "Pride Rock",
   "New Callisto (Capital)",
   { "name": "Felsenheim", "dest": "imperial priderock felsenheim" },
+  { "name": "Zoryawa", "dest": "anisso zoryawa" },
 ]
 
 const SOURCE_URL = "https://raw.githubusercontent.com/XenosCivMC/IF-data/refs/heads/main/railstations.json";

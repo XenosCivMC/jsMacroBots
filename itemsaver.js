@@ -2,6 +2,7 @@
 var threshold = 10;
 const items = [
   "minecraft:golden_pickaxe",
+  "minecraft:stone_shovel",
   "minecraft:stone_axe",
   "minecraft:shears"
 ];
