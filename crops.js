@@ -1,13 +1,13 @@
 var botname = "XenosWheatBot";
 
 // Start in the southwest corner, facing north
-var farmLength = 90; //90
-var farmWidth = 125; //98 + 27 = 125
+var farmLength = 16; //90
+var farmWidth = 18; //98 + 27 = 125
 
 // if this is set to true the player will drop the resources at the end of the line into a water chute.
 // it is set to do this every other line.
 var doDropResources = true;
-var droppedResources = ["Wheat", "Wheat Seeds"];
+var droppedResources = ["Wheat", "Wheat Seeds", "Carrot"];
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // DO NOT TOUCH
@@ -79,6 +79,7 @@ function cleanup() {
   * Drops specific resources on the ground (or in a water drop chute)
   */
 function dropResources() {
+  const inv = Player.openInventory();
   // skip if bot is already aborted
   if (!isRunning(botname))
     return;
@@ -98,6 +99,7 @@ function dropResources() {
     }
   }
   Client.waitTick(1);
+  inv.close();
 }
 
 /** 
@@ -114,9 +116,15 @@ function farm() {
   // When starting a line start looking at the ground, and then "slowly" up
   player.lookAt(90 - 90 * dir, 90);
   Client.waitTick(3);
+  player.lookAt(90 - 90 * dir, 80);
+  Client.waitTick(3);
   player.lookAt(90 - 90 * dir, 70);
   Client.waitTick(3);
+  player.lookAt(90 - 90 * dir, 60);
+  Client.waitTick(3);
   player.lookAt(90 - 90 * dir, 50);
+  Client.waitTick(3);
+  player.lookAt(90 - 90 * dir, 40);
   Client.waitTick(3);
   player.lookAt(90 - 90 * dir, 30);
   Client.waitTick(5);
@@ -134,8 +142,9 @@ function farm() {
   Client.waitTick(5);
   // only drops resources every other line
   // and if its enabled
-  if (dir == -1 && doDropResources)
+  if (dir == -1 && doDropResources) {
     dropResources();
+  }
   KeyBind.key("key.mouse.right", true);
 
   // Adjusting one block to the side
@@ -166,7 +175,6 @@ function farm() {
 }
 
 
-const inv = Player.openInventory();
 const player = Player.getPlayer();
 const trueStartingPos = getCenterPosition(player.getPos());
 var startingPos = getCenterPosition(player.getPos());

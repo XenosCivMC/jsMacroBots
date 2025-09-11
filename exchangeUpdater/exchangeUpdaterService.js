@@ -1,8 +1,12 @@
-// v0.1.0-alpha
+// v0.2.0-alpha
 
 // Config
 const DISCORD_WEBHOOK_URL = "";
 
+const abbreviations = {
+  "Eye of Ender \"Player Essence\"": "Player Essence",
+  "Block of Emerald": "Emerald Blocks"
+}
 /**********************************************************************/
 
 const SERVICE_NAME = event.serviceName;
@@ -78,6 +82,9 @@ function HandleReader(recvMessageEvent) {
       count: match[1],
       item: match[2]
     };
+
+    if (abbreviations[shopEntry.input.item])
+      shopEntry.input.item = abbreviations[shopEntry.input.item];
   }
   else if (match = msgString.match(/Compacted/)) {
     shopEntry.compacted = true;
@@ -87,6 +94,8 @@ function HandleReader(recvMessageEvent) {
       count: match[1],
       item: match[2]
     };
+    if (abbreviations[shopEntry.output.item])
+      shopEntry.output.item = abbreviations[shopEntry.output.item];
   }
   else if (match = msgString.match(/(\d+) exchanges? available\./)) {
     shopEntry.exchanges = match[1];
@@ -109,13 +118,21 @@ function getShopText() {
   if (!include_out_of_stock)
     tempEntryList = tempEntryList.filter(entry => entry.exchanges != 0);
   tempEntryList.forEach((entry, idx) => {
-    let availableString = `(${entry.exchanges} available)`.padEnd(15);
-    let inputString = `${entry.input.count} ${entry.input.item}`/* .padEnd(50) */;
-    let outputString = `${entry.output.count} ${entry.output.item}`/* .padEnd(50) */;
+    let availableString = `(${entry.exchanges.toString().padStart(2)} available)`;
+    let inputUnit;
+    if (!entry.compacted)
+      inputUnit = `(${entry.input.count.toString().padStart(2)})`;
+      else if (entry.input.count == 64)
+      inputUnit = `( 1 CS)`;
+        else 
+      inputUnit = `(${entry.input.count.toString().padStart(2)} CI)`;
+        inputUnit = inputUnit.padEnd(7);
+    let inputString = `${entry.input.item.padEnd(14)} ${inputUnit}`;
+    let outputString = `${entry.output.count.toString().padStart(2)} ${entry.output.item}`/* .padEnd(50) */;
     let entryText = `${availableString} ${inputString}`;
     shopText += `${entryText} -> ${outputString}\\n`
   });
-  shopText = `\`\`\`${shopText}\`\`\``;
+  shopText = `\`\`\`\\n${shopText}\`\`\``;
   shopText = shopText.replaceAll("\\\"", "");
   shopText = shopText.replaceAll("\"", "");
 
@@ -131,9 +148,17 @@ function screenInit(screen) {
 
 
   entryList.forEach((entry, idx) => {
-    let availableString = `(${entry.exchanges} available)`.padEnd(15);
-    let inputString = `${entry.input.count} ${entry.input.item}`/* .padEnd(50) */;
-    let outputString = `${entry.output.count} ${entry.output.item}`/* .padEnd(50) */;
+    let availableString = `(${entry.exchanges.toString().padStart(2)} available)`;
+    let inputUnit;
+    if (!entry.compacted)
+      inputUnit = `(${entry.input.count.toString().padStart(2)})`;
+      else if (entry.input.count == 64)
+      inputUnit = `( 1 CS)`;
+        else 
+      inputUnit = `(${entry.input.count.toString().padStart(2)} CI)`;
+        inputUnit = inputUnit.padEnd(7);
+    let inputString = `${entry.input.item.padEnd(14)} ${inputUnit}`;
+    let outputString = `${entry.output.count.toString().padStart(2)} ${entry.output.item}`/* .padEnd(50) */;
     let entryText = `${availableString} ${inputString}`;
 
     screen.addText(
@@ -173,13 +198,13 @@ function screenInit(screen) {
     "Send it to Discord",
     JavaWrapper.methodToJava(() => {
 
-      let shopText = getShopText();
       if (DISCORD_WEBHOOK_URL) {
-      let answere = Request.post(
-        DISCORD_WEBHOOK_URL,
-        `{"content": "${shopText}"}`,
-        { "Content-Type": "application/json" }
-      );
+        let shopText = getShopText();
+        let answer = Request.post(
+          DISCORD_WEBHOOK_URL,
+          `{"content": "${shopText}"}`,
+          { "Content-Type": "application/json" }
+        );
       }
       else {
         Chat.log("No Webhook url set!");

@@ -1,9 +1,14 @@
-// v0.2.1-alpha
+// v0.4.0-alpha
 
 // Config
 const favorites = [
-  "Pride Rock", "New Callisto (Capital)"
-]
+  "Pride Rock",
+  "New Callisto (Capital)",
+  { "name": "Felsenheim", "dest": "imperial priderock felsenheim" },
+  { "name": "Zoryawa", "dest": "anisso zoryawa" },
+];
+
+const SOURCE_URL = "https://raw.githubusercontent.com/XenosCivMC/IF-data/refs/heads/main/railstations.json";
 
 const buttonWidth = 140;
 const buttonHeight = 15;
@@ -13,11 +18,18 @@ const buttonOffsetY = 30;
 const buttonMaxLines = 12;
 
 /**********************************************************************/
-let data = Request.get("https://raw.githubusercontent.com/XenosCivMC/IF-data/refs/heads/main/railstations.json").text();
-data = JSON.parse(data);
+let data = [];
+try {
+  data = Request.get(SOURCE_URL).text();
+  data = JSON.parse(data);
+} catch (error) {
+  Chat.log(JSON.stringify(error))
+}
 
 let createButtons = function(stations) {
   let btns = [];
+  if (!stations)
+    return [];
   for (let i = 0; i < stations.length; i++) {
     let dest = stations[i];
     let btn = Hud.getOpenScreen().addButton(
@@ -48,7 +60,10 @@ const listener = JsMacros.on(
 
     // Favorites
     Hud.getOpenScreen().addText("Favorites:", 500, 20, 0xffffff, true);
-    let favoriteDests = data.stations.filter(station => favorites.includes(station.name));
+    let favoriteDests = [];
+    if (data.stations)
+      favoriteDests = data.stations.filter(station => favorites.includes(station.name));
+    favoriteDests.push(...favorites.filter(item => typeof item === 'object' && item !== null));
     for (let i = 0; i < favoriteDests.length; i++) {
       let dest = favoriteDests[i];
       let btn = Hud.getOpenScreen().addButton(
@@ -63,7 +78,7 @@ const listener = JsMacros.on(
         })
       );
     }
-
+    // Search
     Hud.getOpenScreen().addTextInput(
       buttonSpaceX,
       buttonSpaceY,

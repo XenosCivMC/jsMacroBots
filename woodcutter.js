@@ -14,8 +14,8 @@ var botname = "XenosWoodCutterBot";
 // var blocksBetweenTrees = 3;
 
 // regensburg
-var farmLength = 24;
-var farmWidth = 24;
+var farmLength = 23;
+var farmWidth = 23;
 var treeType = "birch";
 var blocksBetweenTrees = 6;
 
@@ -36,6 +36,8 @@ const { toggleGlobalVar, isRunning, cleanup } = require('./lib/scriptUtils.js');
 const { getDistance, getCenterPosition, directionToString, getPlayerDirection } = require('./lib/vectorUtils.js');
 const { selectItem, dropResources, freeInventorySlots } = require('./lib/inventoryUtils.js');
 
+const globalTickWait = 5;
+
 function cutTree(goalPosition) {
   var toolTime = chopTime;
   var doJump = true;
@@ -49,7 +51,7 @@ function cutTree(goalPosition) {
     KeyBind.keyBind('key.sneak', true);
     player.lookAt(goalPosition.x, goalPosition.y + 0.5, goalPosition.z);
 
-    Client.waitTick(1);
+    Client.waitTick(globalTickWait);
     if (!isRunning(botname))
       return;
     currentPos = player.getPos();
@@ -186,7 +188,7 @@ toggleGlobalVar(botname);
 
 while (isRunning(botname)) {
   lumberjackLoop();
-  Client.waitTick(1);
+  Client.waitTick(globalTickWait);
   if (!isRunning(botname)) {
     cleanup(botname);
   }
