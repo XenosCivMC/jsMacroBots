@@ -52,7 +52,8 @@ const sortContainer = (inv) => {
 const groupItems = (inv, slotCount) => {
   const groupableItems = getGroupableItems(inv, slotCount);
   for (const item of groupableItems) {
-    const positions = inv.findItem(item);
+    let positions = inv.findItem(item);
+    positions = positions.filter(num => num < slotCount);
     for (const i in [...positions]) {
       const slot = inv.getSlot(positions[i]);
       if (slot.getCount() === slot.getMaxCount()) continue;
