@@ -5,6 +5,7 @@ var jsMacroGlobals = {
   GlobalVars: "readonly",
   Chat: "readonly",
   FS: "readonly",
+  Hud: "readonly",
   Client: "readonly",
   KeyBind: "readonly",
   Player: "readonly",

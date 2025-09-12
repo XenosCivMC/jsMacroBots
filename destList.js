@@ -23,16 +23,16 @@ try {
   data = Request.get(SOURCE_URL).text();
   data = JSON.parse(data);
 } catch (error) {
-  Chat.log(JSON.stringify(error))
+  Chat.log(JSON.stringify(error));
 }
 
-let createButtons = function(stations) {
-  let btns = [];
+const createButtons = function(stations) {
+  const btns = [];
   if (!stations)
     return [];
   for (let i = 0; i < stations.length; i++) {
-    let dest = stations[i];
-    let btn = Hud.getOpenScreen().addButton(
+    const dest = stations[i];
+    const btn = Hud.getOpenScreen().addButton(
       buttonSpaceX + (buttonWidth + buttonSpaceX * 2) * parseInt(i / buttonMaxLines),
       buttonOffsetY + buttonSpaceY + buttonSpaceY * (i % buttonMaxLines) + buttonHeight * (i % buttonMaxLines),
       buttonWidth,
@@ -47,7 +47,7 @@ let createButtons = function(stations) {
   }
 
   return btns;
-}
+};
 
 const listener = JsMacros.on(
   "OpenScreen",
@@ -65,8 +65,8 @@ const listener = JsMacros.on(
       favoriteDests = data.stations.filter(station => favorites.includes(station.name));
     favoriteDests.push(...favorites.filter(item => typeof item === 'object' && item !== null));
     for (let i = 0; i < favoriteDests.length; i++) {
-      let dest = favoriteDests[i];
-      let btn = Hud.getOpenScreen().addButton(
+      const dest = favoriteDests[i];
+      Hud.getOpenScreen().addButton(
         500,
         buttonOffsetY + buttonSpaceY + buttonSpaceY * i + buttonHeight * i,
         buttonWidth,
