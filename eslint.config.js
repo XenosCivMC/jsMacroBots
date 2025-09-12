@@ -4,6 +4,7 @@ import globals from "globals";
 var jsMacroGlobals = {
   GlobalVars: "readonly",
   Chat: "readonly",
+  FS: "readonly",
   Client: "readonly",
   KeyBind: "readonly",
   Player: "readonly",
