@@ -32,15 +32,27 @@ const createButtons = function(stations) {
     return [];
   for (let i = 0; i < stations.length; i++) {
     const dest = stations[i];
-    const btn = Hud.getOpenScreen().addButton(
+    const screen = Hud.getOpenScreen();
+    const btn = screen.addButton(
       buttonSpaceX + (buttonWidth + buttonSpaceX * 2) * parseInt(i / buttonMaxLines),
       buttonOffsetY + buttonSpaceY + buttonSpaceY * (i % buttonMaxLines) + buttonHeight * (i % buttonMaxLines),
       buttonWidth,
       buttonHeight,
       dest.name,
       JavaWrapper.methodToJava(() => {
-        Chat.say("/dest " + dest.dest);
-        Hud.getOpenScreen().close();
+        const station = dest.dest;
+        if (screen.isCtrlDown()) {
+          // toggle favorite  
+          const index = favorites.indexOf(station);
+          if (index !== -1) {
+            favorites.splice(index, 1);
+          } else {
+            favorites.push(station);
+          }
+        } else {
+          Chat.say("/dest " + station);
+          Hud.getOpenScreen().close();
+        }
       })
     );
     btns.push(btn);
