@@ -1,6 +1,6 @@
 # Exchange Updater
 
-This Script can automatically update the available trades at an exchange.
+This Script automatically tracks the available trades at an exchange.
 
 You can do so by adding the exchangeUpdaterService.js as a service in JSMacro.
 Then, with /cti mode enabled, click on every chest you want to track.

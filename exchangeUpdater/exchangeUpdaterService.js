@@ -66,49 +66,80 @@ function HandleReader(recvMessageEvent) {
   const msgJson = JSON.parse(recvMessageEvent.text.getJson()); // get formatted message from the event
   const msgString = recvMessageEvent.text.getString();
 
-  let match;
-  if (match = msgString.match(/Toggled reinforcement information mode ((off)|(on))/)) {
-    ctiMode = match[1] == "on";
-    Chat.log(ctiMode);
-  }
-  else if (match = msgString.match(/\((\d+)\/(\d+)\) exchanges present\./)) {
-    entryStarted = Time.time();
-    shopEntry = {};
-    shopEntry.page = match[1];
-    shopEntry.maxPage = match[2];
-  }
-  else if (match = msgString.match(/Input: (\d+) (.+)/)) {
-    shopEntry.input = {
-      count: match[1],
-      item: match[2]
-    };
+  const patterns = [
+    {
+      description: "toggle cfi mode",
+      regex: /Toggled reinforcement information mode ((off)|(on))/,
+      action: function(match) {
+        ctiMode = match[1] == "on";
+        Chat.log(ctiMode);
+      }
+    }, {
+      description: "page number",
+      regex: /\((\d+)\/(\d+)\) exchanges present\./,
+      action: function(match) {
+        entryStarted = Time.time();
+        shopEntry = {};
+        shopEntry.page = match[1];
+        shopEntry.maxPage = match[2];
+      }
+    }, {
+      description: "Input item",
+      regex: /Input: (\d+) (.+)/,
+      action: function(match) {
+        shopEntry.input = {
+          count: match[1],
+          item: match[2]
+        };
 
-    if (abbreviations[shopEntry.input.item])
-      shopEntry.input.item = abbreviations[shopEntry.input.item];
-  }
-  else if (match = msgString.match(/Compacted/)) {
-    shopEntry.compacted = true;
-  }
-  else if (match = msgString.match(/Output: (\d+) (.+)/)) {
-    shopEntry.output = {
-      count: match[1],
-      item: match[2]
-    };
-    if (abbreviations[shopEntry.output.item])
-      shopEntry.output.item = abbreviations[shopEntry.output.item];
-  }
-  else if (match = msgString.match(/(\d+) exchanges? available\./)) {
-    shopEntry.exchanges = match[1];
-    sendIfComplete();
-  }
-  else if (match = msgString.match(/Reinforced at (.+)%/)) {
-    const match2 = (msgJson.hoverEvent.contents).match(/Location: (.+) (.+) (.+)/);
-    shopEntry.position = {
-      x: match2[1],
-      y: match2[2],
-      z: match2[3]
-    };
-    sendIfComplete();
+        if (abbreviations[shopEntry.input.item])
+          shopEntry.input.item = abbreviations[shopEntry.input.item];
+      }
+    }, {
+      description: "is compacted",
+      regex: /Compacted/,
+      action: function() {
+        shopEntry.compacted = true;
+      }
+    }, {
+      description: "Output item",
+      regex: /Output: (\d+) (.+)/,
+      action: function(match) {
+        shopEntry.output = {
+          count: match[1],
+          item: match[2]
+        };
+        if (abbreviations[shopEntry.output.item])
+          shopEntry.output.item = abbreviations[shopEntry.output.item];
+      }
+    }, {
+      description: "Exchanges left",
+      regex: /(\d+) exchanges? available\./,
+      action: function(match) {
+        shopEntry.exchanges = match[1];
+        sendIfComplete();
+      }
+    }, {
+      description: "Position",
+      regex: /Reinforced at (.+)%/,
+      action: function() {
+        const match2 = (msgJson.hoverEvent.contents).match(/Location: (.+) (.+) (.+)/);
+        shopEntry.position = {
+          x: match2[1],
+          y: match2[2],
+          z: match2[3]
+        };
+        sendIfComplete();
+      }
+    }
+  ];
+
+  for (const pattern of patterns) {
+    const match = msgString.match(pattern.regex);
+    if (match) {
+      pattern.action(match);
+      break;
+    }
   }
 }
 
@@ -122,11 +153,11 @@ function getShopText() {
     let inputUnit;
     if (!entry.compacted)
       inputUnit = `(${entry.input.count.toString().padStart(2)})`;
-      else if (entry.input.count == 64)
+    else if (entry.input.count == 64)
       inputUnit = `( 1 CS)`;
-        else 
+    else
       inputUnit = `(${entry.input.count.toString().padStart(2)} CI)`;
-        inputUnit = inputUnit.padEnd(7);
+    inputUnit = inputUnit.padEnd(7);
     const inputString = `${entry.input.item.padEnd(14)} ${inputUnit}`;
     const outputString = `${entry.output.count.toString().padStart(2)} ${entry.output.item}`/* .padEnd(50) */;
     const entryText = `${availableString} ${inputString}`;
@@ -152,11 +183,11 @@ function screenInit(screen) {
     let inputUnit;
     if (!entry.compacted)
       inputUnit = `(${entry.input.count.toString().padStart(2)})`;
-      else if (entry.input.count == 64)
+    else if (entry.input.count == 64)
       inputUnit = `( 1 CS)`;
-        else 
+    else
       inputUnit = `(${entry.input.count.toString().padStart(2)} CI)`;
-        inputUnit = inputUnit.padEnd(7);
+    inputUnit = inputUnit.padEnd(7);
     const inputString = `${entry.input.item.padEnd(14)} ${inputUnit}`;
     const outputString = `${entry.output.count.toString().padStart(2)} ${entry.output.item}`/* .padEnd(50) */;
     const entryText = `${availableString} ${inputString}`;
