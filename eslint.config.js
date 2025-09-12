@@ -12,6 +12,8 @@ var jsMacroGlobals = {
   event: "readonly",
   JavaWrapper: "readonly",
   JsMacros: "readonly",
+  Utils: "readonly",
+  Time: "readonly"
 };
 
 export default [
