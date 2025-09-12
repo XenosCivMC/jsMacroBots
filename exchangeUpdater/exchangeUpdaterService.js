@@ -19,7 +19,7 @@ let include_out_of_stock = true;
 let shopEntry = {};
 let entryStarted;
 
-const entryList = [];
+let entryList = [];
 
 // example shop entry:
 // {
@@ -240,6 +240,17 @@ function screenInit(screen) {
       else {
         Chat.log("No Webhook url set!");
       }
+      screen.close();
+    })
+  );
+
+  screen.addButton(
+    offsetX + 17 + componentHeight + 420, 400,
+    200, componentHeight,
+    -1,
+    "Clear",
+    JavaWrapper.methodToJava(() => {
+      entryList = [];
       screen.close();
     })
   );
