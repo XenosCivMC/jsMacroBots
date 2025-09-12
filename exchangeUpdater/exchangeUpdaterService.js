@@ -67,17 +67,17 @@ function HandleReader(recvMessageEvent) {
   const msgString = recvMessageEvent.text.getString();
 
   let match;
-  if (match == msgString.match(/Toggled reinforcement information mode ((off)|(on))/)) {
+  if (match = msgString.match(/Toggled reinforcement information mode ((off)|(on))/)) {
     ctiMode = match[1] == "on";
     Chat.log(ctiMode);
   }
-  else if (match == msgString.match(/\((\d+)\/(\d+)\) exchanges present\./)) {
+  else if (match = msgString.match(/\((\d+)\/(\d+)\) exchanges present\./)) {
     entryStarted = Time.time();
     shopEntry = {};
     shopEntry.page = match[1];
     shopEntry.maxPage = match[2];
   }
-  else if (match == msgString.match(/Input: (\d+) (.+)/)) {
+  else if (match = msgString.match(/Input: (\d+) (.+)/)) {
     shopEntry.input = {
       count: match[1],
       item: match[2]
@@ -86,10 +86,10 @@ function HandleReader(recvMessageEvent) {
     if (abbreviations[shopEntry.input.item])
       shopEntry.input.item = abbreviations[shopEntry.input.item];
   }
-  else if (match == msgString.match(/Compacted/)) {
+  else if (match = msgString.match(/Compacted/)) {
     shopEntry.compacted = true;
   }
-  else if (match == msgString.match(/Output: (\d+) (.+)/)) {
+  else if (match = msgString.match(/Output: (\d+) (.+)/)) {
     shopEntry.output = {
       count: match[1],
       item: match[2]
@@ -97,11 +97,11 @@ function HandleReader(recvMessageEvent) {
     if (abbreviations[shopEntry.output.item])
       shopEntry.output.item = abbreviations[shopEntry.output.item];
   }
-  else if (match == msgString.match(/(\d+) exchanges? available\./)) {
+  else if (match = msgString.match(/(\d+) exchanges? available\./)) {
     shopEntry.exchanges = match[1];
     sendIfComplete();
   }
-  else if (match == msgString.match(/Reinforced at (.+)%/)) {
+  else if (match = msgString.match(/Reinforced at (.+)%/)) {
     const match2 = (msgJson.hoverEvent.contents).match(/Location: (.+) (.+) (.+)/);
     shopEntry.position = {
       x: match2[1],
