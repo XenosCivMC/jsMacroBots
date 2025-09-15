@@ -6,7 +6,7 @@ const DISCORD_WEBHOOK_URL = "";
 const abbreviations = {
   "Eye of Ender \"Player Essence\"": "Player Essence",
   "Block of Emerald": "Emerald Blocks"
-}
+};
 /**********************************************************************/
 
 const SERVICE_NAME = event.serviceName;
@@ -36,7 +36,7 @@ let entryList = [];
 // }
 
 function isComplete() {
-  let keys = ["page", "input", "output", "position", "exchanges"];
+  const keys = ["page", "input", "output", "exchanges"];
 
   if ((Time.time() - entryStarted) > 300)
     return false;
@@ -49,9 +49,11 @@ function sendIfComplete() {
 
     // Chat.log(shopEntry);
     const idx = entryList.findIndex(c =>
-      c.position.x === shopEntry.position.x &&
-      c.position.y === shopEntry.position.y &&
-      c.position.z === shopEntry.position.z
+      c.output.item === shopEntry.output.item &&
+      c.output.count === shopEntry.output.count &&
+      c.input.item === shopEntry.input.item &&
+      c.input.count === shopEntry.input.count &&
+      c.page === shopEntry.page
     );
     if (idx !== -1)
       entryList[idx] = shopEntry;
@@ -63,52 +65,83 @@ function sendIfComplete() {
 }
 
 function HandleReader(recvMessageEvent) {
-  let msgJson = JSON.parse(recvMessageEvent.text.getJson()) // get formatted message from the event
-  let msgString = recvMessageEvent.text.getString();
+  const msgJson = JSON.parse(recvMessageEvent.text.getJson()); // get formatted message from the event
+  const msgString = recvMessageEvent.text.getString();
 
-  let match;
-  if (match = msgString.match(/Toggled reinforcement information mode ((off)|(on))/)) {
-    ctiMode = match[1] == "on";
-    Chat.log(ctiMode);
-  }
-  else if (match = msgString.match(/\((\d+)\/(\d+)\) exchanges present\./)) {
-    entryStarted = Time.time();
-    shopEntry = {};
-    shopEntry.page = match[1];
-    shopEntry.maxPage = match[2];
-  }
-  else if (match = msgString.match(/Input: (\d+) (.+)/)) {
-    shopEntry.input = {
-      count: match[1],
-      item: match[2]
-    };
+  const patterns = [
+    {
+      description: "toggle cfi mode",
+      regex: /Toggled reinforcement information mode ((off)|(on))/,
+      action: function(match) {
+        ctiMode = match[1] == "on";
+        Chat.log(ctiMode);
+      }
+    }, {
+      description: "page number",
+      regex: /\((\d+)\/(\d+)\) exchanges present\./,
+      action: function(match) {
+        entryStarted = Time.time();
+        shopEntry = {};
+        shopEntry.page = match[1];
+        shopEntry.maxPage = match[2];
+      }
+    }, {
+      description: "Input item",
+      regex: /Input: (\d+) (.+)/,
+      action: function(match) {
+        shopEntry.input = {
+          count: match[1],
+          item: match[2]
+        };
 
-    if (abbreviations[shopEntry.input.item])
-      shopEntry.input.item = abbreviations[shopEntry.input.item];
-  }
-  else if (match = msgString.match(/Compacted/)) {
-    shopEntry.compacted = true;
-  }
-  else if (match = msgString.match(/Output: (\d+) (.+)/)) {
-    shopEntry.output = {
-      count: match[1],
-      item: match[2]
-    };
-    if (abbreviations[shopEntry.output.item])
-      shopEntry.output.item = abbreviations[shopEntry.output.item];
-  }
-  else if (match = msgString.match(/(\d+) exchanges? available\./)) {
-    shopEntry.exchanges = match[1];
-    sendIfComplete();
-  }
-  else if (match = msgString.match(/Reinforced at (.+)%/)) {
-    let match2 = (msgJson.hoverEvent.contents).match(/Location: (.+) (.+) (.+)/);
-    shopEntry.position = {
-      x: match2[1],
-      y: match2[2],
-      z: match2[3]
+        if (abbreviations[shopEntry.input.item])
+          shopEntry.input.item = abbreviations[shopEntry.input.item];
+      }
+    }, {
+      description: "is compacted",
+      regex: /Compacted/,
+      action: function() {
+        shopEntry.compacted = true;
+      }
+    }, {
+      description: "Output item",
+      regex: /Output: (\d+) (.+)/,
+      action: function(match) {
+        shopEntry.output = {
+          count: match[1],
+          item: match[2]
+        };
+        if (abbreviations[shopEntry.output.item])
+          shopEntry.output.item = abbreviations[shopEntry.output.item];
+      }
+    }, {
+      description: "Exchanges left",
+      regex: /(\d+) exchanges? available\./,
+      action: function(match) {
+        shopEntry.exchanges = match[1];
+        sendIfComplete();
+      }
+    }, /*{
+      description: "Position",
+      regex: /Reinforced at (.+)%/,
+      action: function() {
+        const match2 = (msgJson.hoverEvent.contents).match(/Location: (.+) (.+) (.+)/);
+        shopEntry.position = {
+          x: match2[1],
+          y: match2[2],
+          z: match2[3]
+        };
+        sendIfComplete();
+      }
+    }*/
+  ];
+
+  for (const pattern of patterns) {
+    const match = msgString.match(pattern.regex);
+    if (match) {
+      pattern.action(match);
+      break;
     }
-    sendIfComplete();
   }
 }
 
@@ -117,20 +150,20 @@ function getShopText() {
   let tempEntryList = entryList.slice();
   if (!include_out_of_stock)
     tempEntryList = tempEntryList.filter(entry => entry.exchanges != 0);
-  tempEntryList.forEach((entry, idx) => {
-    let availableString = `(${entry.exchanges.toString().padStart(2)} available)`;
+  tempEntryList.forEach((entry) => {
+    const availableString = `(${entry.exchanges.toString().padStart(2)} available)`;
     let inputUnit;
     if (!entry.compacted)
       inputUnit = `(${entry.input.count.toString().padStart(2)})`;
-      else if (entry.input.count == 64)
+    else if (entry.input.count == 64)
       inputUnit = `( 1 CS)`;
-        else 
+    else
       inputUnit = `(${entry.input.count.toString().padStart(2)} CI)`;
-        inputUnit = inputUnit.padEnd(7);
-    let inputString = `${entry.input.item.padEnd(14)} ${inputUnit}`;
-    let outputString = `${entry.output.count.toString().padStart(2)} ${entry.output.item}`/* .padEnd(50) */;
-    let entryText = `${availableString} ${inputString}`;
-    shopText += `${entryText} -> ${outputString}\\n`
+    inputUnit = inputUnit.padEnd(7);
+    const inputString = `${entry.input.item.padEnd(14)} ${inputUnit}`;
+    const outputString = `${entry.output.count.toString().padStart(2)} ${entry.output.item}`/* .padEnd(50) */;
+    const entryText = `${availableString} ${inputString}`;
+    shopText += `${entryText} -> ${outputString}\\n`;
   });
   shopText = `\`\`\`\\n${shopText}\`\`\``;
   shopText = shopText.replaceAll("\\\"", "");
@@ -148,18 +181,18 @@ function screenInit(screen) {
 
 
   entryList.forEach((entry, idx) => {
-    let availableString = `(${entry.exchanges.toString().padStart(2)} available)`;
+    const availableString = `(${entry.exchanges.toString().padStart(2)} available)`;
     let inputUnit;
     if (!entry.compacted)
       inputUnit = `(${entry.input.count.toString().padStart(2)})`;
-      else if (entry.input.count == 64)
+    else if (entry.input.count == 64)
       inputUnit = `( 1 CS)`;
-        else 
+    else
       inputUnit = `(${entry.input.count.toString().padStart(2)} CI)`;
-        inputUnit = inputUnit.padEnd(7);
-    let inputString = `${entry.input.item.padEnd(14)} ${inputUnit}`;
-    let outputString = `${entry.output.count.toString().padStart(2)} ${entry.output.item}`/* .padEnd(50) */;
-    let entryText = `${availableString} ${inputString}`;
+    inputUnit = inputUnit.padEnd(7);
+    const inputString = `${entry.input.item.padEnd(14)} ${inputUnit}`;
+    const outputString = `${entry.output.count.toString().padStart(2)} ${entry.output.item}`/* .padEnd(50) */;
+    const entryText = `${availableString} ${inputString}`;
 
     screen.addText(
       entryText,
@@ -189,7 +222,7 @@ function screenInit(screen) {
       Utils.copyToClipboard(shopText);
       screen.close();
     })
-  )
+  );
 
   screen.addButton(
     offsetX + 17 + componentHeight + 210, 400,
@@ -199,8 +232,8 @@ function screenInit(screen) {
     JavaWrapper.methodToJava(() => {
 
       if (DISCORD_WEBHOOK_URL) {
-        let shopText = getShopText();
-        let answer = Request.post(
+        const shopText = getShopText();
+        Request.post(
           DISCORD_WEBHOOK_URL,
           `{"content": "${shopText}"}`,
           { "Content-Type": "application/json" }
@@ -211,7 +244,18 @@ function screenInit(screen) {
       }
       screen.close();
     })
-  )
+  );
+
+  screen.addButton(
+    offsetX + 17 + componentHeight + 420, 400,
+    200, componentHeight,
+    -1,
+    "Clear",
+    JavaWrapper.methodToJava(() => {
+      entryList = [];
+      screen.close();
+    })
+  );
 
   screen.addCheckbox(
     offsetX + 17 + componentHeight, 400 + componentHeight + 10,
@@ -220,7 +264,7 @@ function screenInit(screen) {
     JavaWrapper.methodToJava(() => {
       include_out_of_stock = !include_out_of_stock;
     })
-  )
+  );
 }
 
 
@@ -229,7 +273,7 @@ guiScreen.setOnInit(JavaWrapper.methodToJava(screenInit));
 
 function startReader() {
   Chat.log(`STARTING ${SERVICE_NAME}`);
-  let listener = JsMacros.on('RecvMessage', JavaWrapper.methodToJava(HandleReader));
+  const listener = JsMacros.on('RecvMessage', JavaWrapper.methodToJava(HandleReader));
 
   event.stopListener = JavaWrapper.methodToJava(() => { // clean up service
     JsMacros.off(listener);

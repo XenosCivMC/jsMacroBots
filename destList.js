@@ -1,13 +1,6 @@
-// v0.4.0-alpha
+// v0.5.0-alpha
 
 // Config
-const favorites = [
-  "Pride Rock",
-  "New Callisto (Capital)",
-  { "name": "Felsenheim", "dest": "imperial priderock felsenheim" },
-  { "name": "Zoryawa", "dest": "anisso zoryawa" },
-];
-
 const SOURCE_URL = "https://raw.githubusercontent.com/XenosCivMC/IF-data/refs/heads/main/railstations.json";
 
 const buttonWidth = 140;
@@ -18,28 +11,61 @@ const buttonOffsetY = 30;
 const buttonMaxLines = 12;
 
 /**********************************************************************/
-let data = [];
+
+const { loadObjectFromFile, saveObjectToFile } = require('./lib/fileUtils.js');
+let favorites = loadObjectFromFile("data/favoriteDests.json");
+
+if (favorites === null) {
+  favorites = [
+    "Pride Rock",
+    "New Callisto (Capital)",
+    {
+      "name": "Felsenheim",
+      "dest": "imperial priderock felsenheim"
+    }
+  ];
+  saveObjectToFile(favorites, "data/favoriteDests.json");
+
+}
+
+let data = {
+  stations: []
+};
+
 try {
   data = Request.get(SOURCE_URL).text();
   data = JSON.parse(data);
 } catch (error) {
-  Chat.log(JSON.stringify(error))
+  Chat.log(JSON.stringify(error));
 }
 
-let createButtons = function(stations) {
-  let btns = [];
+const createButtons = function(stations) {
+  const btns = [];
   if (!stations)
     return [];
   for (let i = 0; i < stations.length; i++) {
-    let dest = stations[i];
-    let btn = Hud.getOpenScreen().addButton(
+    const dest = stations[i];
+    const screen = Hud.getOpenScreen();
+    const btn = screen.addButton(
       buttonSpaceX + (buttonWidth + buttonSpaceX * 2) * parseInt(i / buttonMaxLines),
       buttonOffsetY + buttonSpaceY + buttonSpaceY * (i % buttonMaxLines) + buttonHeight * (i % buttonMaxLines),
       buttonWidth,
       buttonHeight,
       dest.name,
       JavaWrapper.methodToJava(() => {
-        Chat.say("/dest " + dest.dest);
+        const station = dest.name;
+        if (screen.isCtrlDown()) {
+          // toggle favorite  
+          const index = favorites.indexOf(station);
+          if (index !== -1) {
+            favorites.splice(index, 1);
+          } else {
+            favorites.push(station);
+          }
+          saveObjectToFile(favorites, "favoriteDests.json");
+        } else {
+          Chat.say("/dest " + dest.dest);
+        }
         Hud.getOpenScreen().close();
       })
     );
@@ -47,7 +73,7 @@ let createButtons = function(stations) {
   }
 
   return btns;
-}
+};
 
 const listener = JsMacros.on(
   "OpenScreen",
@@ -59,21 +85,33 @@ const listener = JsMacros.on(
     btns = createButtons(data.stations);
 
     // Favorites
-    Hud.getOpenScreen().addText("Favorites:", 500, 20, 0xffffff, true);
+    Hud.getOpenScreen().addText("Favorites:", 600, 20, 0xffffff, true);
     let favoriteDests = [];
-    if (data.stations)
-      favoriteDests = data.stations.filter(station => favorites.includes(station.name));
+
+    // Add stations from data list
+    favoriteDests = data.stations.filter(station => favorites.includes(station.name));
+    // Add manual stations
     favoriteDests.push(...favorites.filter(item => typeof item === 'object' && item !== null));
+
     for (let i = 0; i < favoriteDests.length; i++) {
-      let dest = favoriteDests[i];
-      let btn = Hud.getOpenScreen().addButton(
-        500,
+      const dest = favoriteDests[i];
+      Hud.getOpenScreen().addButton(
+        600,
         buttonOffsetY + buttonSpaceY + buttonSpaceY * i + buttonHeight * i,
         buttonWidth,
         buttonHeight,
         dest.name,
         JavaWrapper.methodToJava(() => {
-          Chat.say("/dest " + dest.dest);
+          const screen = Hud.getOpenScreen();
+          if (screen.isCtrlDown()) {
+            const station = dest.name;
+            const index = favorites.indexOf(station);
+            favorites.splice(index, 1);
+            saveObjectToFile(favorites, "data/favoriteDests.json");
+          }
+          else {
+            Chat.say("/dest " + dest.dest);
+          }
           Hud.getOpenScreen().close();
         })
       );
