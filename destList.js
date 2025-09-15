@@ -64,7 +64,7 @@ const createButtons = function(stations) {
           }
           saveObjectToFile(favorites, "favoriteDests.json");
         } else {
-          Chat.say("/dest " + station);
+          Chat.say("/dest " + dest.dest);
         }
         Hud.getOpenScreen().close();
       })

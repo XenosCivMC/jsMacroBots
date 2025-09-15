@@ -36,7 +36,7 @@ let entryList = [];
 // }
 
 function isComplete() {
-  const keys = ["page", "input", "output", "position", "exchanges"];
+  const keys = ["page", "input", "output", "exchanges"];
 
   if ((Time.time() - entryStarted) > 300)
     return false;
@@ -49,9 +49,11 @@ function sendIfComplete() {
 
     // Chat.log(shopEntry);
     const idx = entryList.findIndex(c =>
-      c.position.x === shopEntry.position.x &&
-      c.position.y === shopEntry.position.y &&
-      c.position.z === shopEntry.position.z
+      c.output.item === shopEntry.output.item &&
+      c.output.count === shopEntry.output.count &&
+      c.input.item === shopEntry.input.item &&
+      c.input.count === shopEntry.input.count &&
+      c.page === shopEntry.page
     );
     if (idx !== -1)
       entryList[idx] = shopEntry;
@@ -119,7 +121,7 @@ function HandleReader(recvMessageEvent) {
         shopEntry.exchanges = match[1];
         sendIfComplete();
       }
-    }, {
+    }, /*{
       description: "Position",
       regex: /Reinforced at (.+)%/,
       action: function() {
@@ -131,7 +133,7 @@ function HandleReader(recvMessageEvent) {
         };
         sendIfComplete();
       }
-    }
+    }*/
   ];
 
   for (const pattern of patterns) {
