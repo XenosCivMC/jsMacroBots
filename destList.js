@@ -62,7 +62,7 @@ const createButtons = function(stations) {
           } else {
             favorites.push(station);
           }
-          saveObjectToFile(favorites, "favoriteDests.json");
+          saveObjectToFile(favorites, "data/favoriteDests.json");
         } else {
           Chat.say("/dest " + dest.dest);
         }
