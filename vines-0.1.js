@@ -1,5 +1,6 @@
 const botname = "XenosVinesBot";
 const farmLength = 32;
+const farmLevels = 3;
 // let farmLength = 5;
 // const farmRows = 2;
 
@@ -22,7 +23,6 @@ function gotoCenter() {
     KeyBind.keyBind('key.sneak', true);
     KeyBind.keyBind('key.forward', true);
 
-    Chat.log(getDistance(currentPos, currentCenterPos));
     Client.waitTick(1);
     currentPos = player.getPos();
   }
@@ -33,8 +33,6 @@ function gotoCenter() {
 }
 
 function strafeToPosition(pos, dir) {
-  Chat.log(`Strafing to: ${pos}`);
-
   // where is the player leaning towards?
   let leaning = "";
   if (dir.primaryDir.x != 0 && dir.primaryDir.x == dir.secondaryDir.z) leaning = "right";
@@ -46,7 +44,6 @@ function strafeToPosition(pos, dir) {
   const player = Player.getPlayer();
   let currentPos = player.getPos();
   while ((getDistance(currentPos, pos) > 0.4) && isRunning(botname)) {
-    Chat.log(getDistance(currentPos, pos));
     player.lookAt(currentPos.x + dir.primaryDir.x, currentPos.y + 1.6, currentPos.z + dir.primaryDir.z);
     KeyBind.keyBind(`key.${leaning}`, true);
 
@@ -67,7 +64,7 @@ function climbLadder(dir) {
   if (dir.primaryDir.z != 0 && dir.primaryDir.z != dir.secondaryDir.x) leaning = "right";
   if (dir.primaryDir.z != 0 && dir.primaryDir.z == dir.secondaryDir.x) leaning = "left";
 
-  let leaningOther = "";
+  let leaningOther = "right";
   if (leaning == "right") leaningOther = "left";
 
   gotoCenter();
@@ -76,7 +73,7 @@ function climbLadder(dir) {
   Client.waitTick(50);
   KeyBind.keyBind(`key.${leaning}`, false);
   KeyBind.keyBind(`key.${leaningOther}`, true);
-  Client.waitTick(15);
+  Client.waitTick(13);
   KeyBind.keyBind(`key.${leaningOther}`, false);
 
 }
@@ -119,9 +116,14 @@ toggleGlobalVar(botname);
 if (isRunning(botname)) {
   // const player = Player.getPlayer();
   const dir = getPlayerDirection();
-  // gotoCenter();
-  // doVineRow(dir);
-  climbLadder(dir);
+  doVineRow(dir);
+  for (let level = 0; level < farmLevels - 1; level++) {
+    gotoCenter();
+    climbLadder(dir);
+    dir.secondaryDir.x *= -1;
+    dir.secondaryDir.z *= -1;
+    doVineRow(dir);
+  }
   GlobalVars.putBoolean(botname, false);
   Client.waitTick(1);
   cleanup(botname);
