@@ -33,6 +33,9 @@ function gotoCenter() {
 }
 
 function strafeToPosition(pos, dir) {
+  if (!isRunning(botname))
+    return;
+
   // where is the player leaning towards?
   let leaning = "";
   if (dir.primaryDir.x != 0 && dir.primaryDir.x == dir.secondaryDir.z) leaning = "right";
@@ -56,6 +59,8 @@ function strafeToPosition(pos, dir) {
 }
 
 function climbLadder(dir) {
+  if (!isRunning(botname))
+    return;
 
   // where is the player leaning towards?
   let leaning = "";
@@ -79,6 +84,8 @@ function climbLadder(dir) {
 }
 
 function doVineColumn(dir) {
+  if (!isRunning(botname))
+    return;
 
   const player = Player.getPlayer();
   const currentYaw = player.getYaw();
@@ -92,6 +99,9 @@ function doVineColumn(dir) {
 }
 
 function doVineRow(dir) {
+  if (!isRunning(botname))
+    return;
+
   const player = Player.getPlayer();
   gotoCenter();
   let currentPos = player.getPos();
@@ -117,8 +127,7 @@ if (isRunning(botname)) {
   // const player = Player.getPlayer();
   const dir = getPlayerDirection();
   doVineRow(dir);
-  for (let level = 0; level < farmLevels - 1; level++) {
-    gotoCenter();
+  for (let level = 0; ((level < farmLevels - 1) && !isRunning(botname)); level++) {
     climbLadder(dir);
     dir.secondaryDir.x *= -1;
     dir.secondaryDir.z *= -1;
