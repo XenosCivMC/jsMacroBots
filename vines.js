@@ -1,3 +1,5 @@
+// v0.1.0-alpha
+//
 const botname = "XenosVinesBot";
 const farmLength = 32;
 const farmLevels = 3;
