@@ -31,20 +31,13 @@ class Stopwatch {
     this.endTime = null;
     this.isRunning = false;
   }
-
 }
-
-
-
-const SERVICE_NAME = event.serviceName;
-
-const stopwatch = new Stopwatch();
 
 function testStopwatch(event) {
   if (event.key == "key.keyboard.g" && event.action == 1) {
     Chat.log(event.action);
 
-    if(!stopwatch.isRunning) {
+    if (!stopwatch.isRunning) {
       stopwatch.start();
     }
     else {
@@ -54,10 +47,56 @@ function testStopwatch(event) {
   }
 }
 
-Chat.log(`STARTING ${SERVICE_NAME}`);
-const listener = JsMacros.on('Key', JavaWrapper.methodToJava(testStopwatch));
+function interactEntity(event) {
+  // check if user is really in a minecart
+  // TODO: check event for minecart
+  if (Player.getPlayer().getVehicle() == null) {
 
+    isInCart = false;
+    return;
+  } else {
+
+    isInCart = true;
+    tickListener = JsMacros.on('Tick', JavaWrapper.methodToJava(function() {
+      const currentPosition = Player.player.getPos();
+
+      // player is moving...
+      if (currentPosition.x != lastPosition.x ||
+        currentPosition.y != lastPosition.y ||
+        currentPosition.z != lastPosition.z
+      ) {
+        if (!stopwatch.isRunning) {
+          stopwatch.start();
+        }
+      }
+      // player is not moving...
+      else {
+        if (stopwatch.isRunning) {
+          stopwatch.stop();
+        }
+      }
+
+
+      Chat.log(stopwatch.getElapsedTime());
+    }));
+  }
+}
+
+const SERVICE_NAME = event.serviceName;
+const stopwatch = new Stopwatch();
+
+const keyListener = JsMacros.on('Key', JavaWrapper.methodToJava(testStopwatch));
+const entityInteractListener = JsMacros.on('InteractEntity', JavaWrapper.methodToJava(interactEntity));
+let tickListener;
+
+let isInCart = false;
+let lastPosition;
+
+Chat.log(`STARTING ${SERVICE_NAME}`);
 event.stopListener = JavaWrapper.methodToJava(() => { // clean up service
-  JsMacros.off(listener);
+  JsMacros.off(keyListener);
+  JsMacros.off(entityInteractListener);
+  if (tickListener)
+    JsMacros.off(tickListener);
   Chat.log(`${SERVICE_NAME} STOPPED.`);
 });
