@@ -168,7 +168,6 @@ function lumberjackLoop() {
   }
 }
 
-const inv = Player.openInventory();
 const player = Player.getPlayer();
 const trueStartingPos = getCenterPosition(player.getPos());
 var startingPos = getCenterPosition(player.getPos());

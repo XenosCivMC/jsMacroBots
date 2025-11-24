@@ -5,15 +5,7 @@ function createButton(e) {
 
   if (e.screenName == "Game Menu") {
     const screen = e.screen;
-    // Chat.log(screen.getButtonWidgets());
-    // const result = screen.getButtonWidgets().find(obj => obj.getLabel() == "Disconnect");
-    // const discBtn = screen.getButtonWidgets()[7];
-    // Chat.log(discBtn.getX());
-    // Chat.log(discBtn.getY());
-    // Chat.log(discBtn.getWidth());
-    // Chat.log(discBtn.getHeight());
-    // discBtn.setLabel("Save Logout");
-    const btn = screen.addButton(
+    screen.addButton(
       378,
       230 + 20 + 5,
       204,
