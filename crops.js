@@ -1,105 +1,49 @@
 var botname = "XenosWheatBot";
 
 // Start in the southwest corner, facing north
-var farmLength = 16; //90
-var farmWidth = 18; //98 + 27 = 125
+// var farmLength = 16; //90
+// var farmWidth = 16; //98 + 27 = 125
+var farmLength = 54; //90
+var farmWidth = 128; //98 + 27 = 125
 
 // if this is set to true the player will drop the resources at the end of the line into a water chute.
 // it is set to do this every other line.
 var doDropResources = true;
-var droppedResources = ["Wheat", "Wheat Seeds", "Carrot"];
+var droppedResources = ["Wheat", "Wheat Seeds", "Carrot", "Potato"];
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // DO NOT TOUCH
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/**
-  * Toggles a JSMacro GlobalVar.
-  * Is used for determining if a specific bot is running.
-  * With this the script can even be run as a hotkey, cause it will be ended properly!
-  * Also note that the "Bot finished" message is done in cleanup, because of timings.
-  */
-function toggleGlobalVar(botname) {
-  const reverse = !GlobalVars.getBoolean(botname);
-  GlobalVars.putBoolean(botname, reverse);
-  if (reverse) {
-    Chat.log(Chat.createTextBuilder().append("[").withColor(0x7)
-      .append(botname).withColor(0x5)
-      .append("]").withColor(0x7).append(" enabled").withColor(0xa)
-      .build());
+const { toggleGlobalVar, isRunning, cleanup } = require('./lib/scriptUtils.js');
+const { getDistance, getCenterPosition, getPlayerDirection } = require('./lib/vectorUtils.js');
+const { dropResources } = require('./lib/inventoryUtils.js');
+
+const globalTickWait = 5;
+
+function calculateYaw(currentPos, goalPos) {
+  const dx = goalPos.x - currentPos.x;
+  const dz = goalPos.z - currentPos.z;
+
+  const yawRadians = Math.atan2(dz, dx);
+
+  let yawDegrees = yawRadians * (180 / Math.PI) - 90;
+
+  if (yawDegrees > 180) {
+    yawDegrees -= 360;
+  } else if (yawDegrees < -180) {
+    yawDegrees += 360;
   }
+
+  return yawDegrees;
 }
 
-/**
-  * Centers the given position to the middle of the block.
-  * Only works in xz direction!
-  */
-function getCenterPosition(position) {
-  var newPos = {
-    x: Math.floor(position.x) + 0.5,
-    y: position.y,
-    z: Math.floor(position.z) + 0.5
-  };
-
-  return newPos;
-}
-
-/**
-  * Calculates the distance between 2 positions.
-  * Only works in xz direction!
-  */
-function getDistance(pos1, pos2) {
-  return Math.sqrt((pos2.x - pos1.x) ** 2 + (pos2.z - pos1.z) ** 2);
-}
-
-/**
-  * Syntactic sugar for checking a GlobalVar Boolean.
-  * See toggleGlobalVar(botname)
-  */
-function isRunning(botname) {
-  return GlobalVars.getBoolean(botname);
-}
-
-/**
-  * Runs after the script is finished or toggled (via hotkey)
-  */
-function cleanup() {
-  KeyBind.keyBind('key.sneak', false);
-  KeyBind.key("key.mouse.right", false);
-  KeyBind.keyBind('key.forward', false);
-
-  // Because of timings the chat message is done here and not in toggleGlobalVar()
-  Chat.log(Chat.createTextBuilder().append("[").withColor(0x7)
-    .append(botname).withColor(0x5)
-    .append("]").withColor(0x7).append(" disabled").withColor(0xc)
-    .build());
-}
-
-/**
-  * Drops specific resources on the ground (or in a water drop chute)
-  */
-function dropResources() {
-  const inv = Player.openInventory();
-  // skip if bot is already aborted
-  if (!isRunning(botname))
-    return;
-  // look north. TODO
-  player.lookAt(180, 45);
-  Client.waitTick(5);
-  // iterate every inventory slot
-  for (var i = 0; i <= 44; i++) {
-    // if wheat or seed...
-    // if (inv.getSlot(i).getName().getString() == crop || inv.getSlot(i).getName().getString() == cropSeeds) {
-    if (droppedResources.includes(inv.getSlot(i).getName().getString())) {
-      // ... click it ...
-      inv.click(i);
-      Client.waitTick(1);
-      // ... and then click on the ground.
-      inv.click(-999);
-    }
+function lookupSteps(yaw, from, to, steps, ticksBetweenSteps) {
+  const step = (to - from) / (steps - 1);
+  for (let i = 0; i < steps; i++) {
+    player.lookAt(yaw, from + (step * i));
+    Client.waitTick(ticksBetweenSteps);
   }
-  Client.waitTick(1);
-  inv.close();
 }
 
 /** 
@@ -110,31 +54,19 @@ function farm() {
   KeyBind.key("key.mouse.right", true);
   // copy startingPos and determine goal from it
   var goalPosition = { ...startingPos };
-  goalPosition.z += (farmLength - 1.0) * dir;
-  // also look into the ground. When I am thinking about it... probably not necessary
-  goalPosition.y -= 2;
+  goalPosition.x += (farmLength - 1.0) * currentPrimaryDir.x;
+  goalPosition.z += (farmLength - 1.0) * currentPrimaryDir.z;
+
+  const yaw = calculateYaw(player.getPos(), goalPosition);
   // When starting a line start looking at the ground, and then "slowly" up
-  player.lookAt(90 - 90 * dir, 90);
-  Client.waitTick(3);
-  player.lookAt(90 - 90 * dir, 80);
-  Client.waitTick(3);
-  player.lookAt(90 - 90 * dir, 70);
-  Client.waitTick(3);
-  player.lookAt(90 - 90 * dir, 60);
-  Client.waitTick(3);
-  player.lookAt(90 - 90 * dir, 50);
-  Client.waitTick(3);
-  player.lookAt(90 - 90 * dir, 40);
-  Client.waitTick(3);
-  player.lookAt(90 - 90 * dir, 30);
-  Client.waitTick(5);
+  lookupSteps(yaw, 90, 20, 8, 3);
   // walk to the end of the line
   while ((getDistance(currentPos, goalPosition) > 0.5) && isRunning(botname)) {
     KeyBind.key("key.mouse.right", true);
     // look forward, slightly down
-    player.lookAt(90 - 90 * dir, 15);
+    player.lookAt(yaw, 20);
     KeyBind.keyBind('key.forward', true);
-    KeyBind.keyBind('key.sprint', true);
+    // KeyBind.keyBind('key.sprint', true);
     Client.waitTick(1);
     currentPos = player.getPos();
   }
@@ -142,25 +74,38 @@ function farm() {
   Client.waitTick(5);
   // only drops resources every other line
   // and if its enabled
-  if (dir == -1 && doDropResources) {
-    dropResources();
+  if (currentPrimaryDir.x == 1 && doDropResources) {
+    dropResources(droppedResources, false);
   }
   KeyBind.key("key.mouse.right", true);
 
   // Adjusting one block to the side
-  goalPosition.x += 1;
+  goalPosition.x += secondaryDir.x;
+  goalPosition.z += secondaryDir.z;
   while ((getDistance(currentPos, goalPosition) > 0.5) && isRunning(botname)) {
     KeyBind.key("key.mouse.right", true);
     KeyBind.keyBind('key.sneak', true);
     // Look at the block to the right
     player.lookAt(goalPosition.x, goalPosition.y, goalPosition.z);
     KeyBind.keyBind('key.forward', true);
-    KeyBind.keyBind('key.sprint', true);
+    // KeyBind.keyBind('key.sprint', true);
 
     Client.waitTick(1);
     currentPos = player.getPos();
     // stop if all lines are farmed
-    if (currentPos.x >= trueStartingPos.x + (farmWidth - 1)) {
+    //
+    var ultimateGoalPosition = { ...trueStartingPos };
+    ultimateGoalPosition.x += (farmWidth - 1) * secondaryDir.x;
+    ultimateGoalPosition.z += (farmWidth - 1) * secondaryDir.z;
+
+    // if farmLength is uneven ultimateGoal must be at the end of the line
+    // because of alternating paths
+    if (farmWidth % 2 == 1) {
+      ultimateGoalPosition.x += (farmLength - 1) * primaryDir.x;
+      ultimateGoalPosition.z += (farmLength - 1) * primaryDir.z;
+    }
+
+    if (getDistance(currentPos, ultimateGoalPosition) < 0.3) {
       GlobalVars.putBoolean(botname, false);
       return;
     }
@@ -169,9 +114,14 @@ function farm() {
   KeyBind.keyBind('key.forward', false);
   currentPos = player.getPos();
   // calculates the new startingPos
-  startingPos.x += 1;
-  startingPos.z += (farmLength - 1.0) * dir;
-  dir *= -1;
+  startingPos.x += (farmLength - 1.0) * currentPrimaryDir.x;
+  startingPos.z += (farmLength - 1.0) * currentPrimaryDir.z;
+
+  startingPos.x += secondaryDir.x;
+  startingPos.z += secondaryDir.z;
+  // negate direction
+  currentPrimaryDir.x *= -1;
+  currentPrimaryDir.z *= -1;
 }
 
 
@@ -179,7 +129,12 @@ const player = Player.getPlayer();
 const trueStartingPos = getCenterPosition(player.getPos());
 var startingPos = getCenterPosition(player.getPos());
 var currentPos = player.getPos();
-var dir = -1;
+
+var dir = getPlayerDirection();
+var secondaryDir = dir.secondaryDir;
+var primaryDir = dir.primaryDir;
+
+var currentPrimaryDir = { ...primaryDir };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // MAIN LOOP
@@ -187,11 +142,10 @@ var dir = -1;
 
 toggleGlobalVar(botname);
 
-var farming = true;
-while (farming && isRunning(botname)) {
+while (isRunning(botname)) {
   farm();
-  Client.waitTick(1);
+  Client.waitTick(globalTickWait);
   if (!isRunning(botname)) {
-    cleanup();
+    cleanup(botname);
   }
 }
