@@ -8,7 +8,7 @@ const buttonHeight = 15;
 const buttonSpaceX = 3;
 const buttonSpaceY = 1;
 const buttonOffsetY = 30;
-const buttonMaxLines = 12;
+const buttonMaxLines = 14;
 
 /**********************************************************************/
 
