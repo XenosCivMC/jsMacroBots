@@ -5,8 +5,37 @@ const DISCORD_WEBHOOK_URL = "";
 
 const abbreviations = {
   "Eye of Ender \"Player Essence\"": "Player Essence",
-  "Block of Emerald": "Emerald Blocks"
 };
+const enchants = [
+  "Unbreaking 1",
+  "Unbreaking 2",
+  "Unbreaking 3",
+  "Efficiency 1",
+  "Efficiency 2",
+  "Efficiency 3",
+  "Efficiency 4",
+  "Efficiency 5",
+  "Silk Touch 1",
+  "Fortune 1",
+  "Fortune 2",
+  "Fortune 3",
+  "Protection 1",
+  "Protection 2",
+  "Protection 3",
+  "Protection 4",
+  "Protection 5",
+  "Aqua Affinity 1",
+  "Respiration 1",
+  "Respiration 2",
+  "Respiration 3",
+  "Depth Strider 1",
+  "Depth Strider 2",
+  "Depth Strider 3",
+  "Feather Falling 1",
+  "Feather Falling 2",
+  "Feather Falling 3",
+  "Feather Falling 4",
+];
 /**********************************************************************/
 
 const SERVICE_NAME = event.serviceName;
@@ -94,6 +123,7 @@ function HandleReader(recvMessageEvent) {
           item: match[2]
         };
 
+        console.log(shopEntry.input.item)
         if (abbreviations[shopEntry.input.item])
           shopEntry.input.item = abbreviations[shopEntry.input.item];
       }
@@ -134,6 +164,16 @@ function HandleReader(recvMessageEvent) {
         sendIfComplete();
       }
     }*/
+    {
+      description: "Everything else",
+      regex: /.*/,
+      action: function(match) {
+          match = match[0].trim();
+        if (enchants.includes(match)) {
+          shopEntry.output.item += " " + match;
+        }
+      }
+    }
   ];
 
   for (const pattern of patterns) {
@@ -170,6 +210,33 @@ function getShopText() {
   shopText = shopText.replaceAll("\"", "");
 
   return shopText;
+}
+
+function getSpreadsheetText() {
+  let shopText = "";
+  let tempEntryList = entryList.slice();
+  if (!include_out_of_stock)
+    tempEntryList = tempEntryList.filter(entry => entry.exchanges != 0);
+  tempEntryList.forEach((entry) => {
+    const inputItem = `${entry.input.item}`;
+    const inputCount = entry.input.count;
+    let outputItem = `${entry.output.item}`;
+    let outputCount = entry.output.count;
+    // TODO: I think compacted needs to be in input/output item
+    if (entry.compacted) {
+      if (entry.output.count == 64) {
+        outputItem = "CS " + outputItem;
+        outputCount = 1;
+
+      } else
+        outputItem = "CI " + outputItem;
+    }
+    const entryText = `${inputItem}	${inputCount}	${outputItem}	${outputCount}	${entry.exchanges}`;
+    shopText += `${entryText}\n`;
+  });
+
+  return shopText;
+  // return "Test	123" + "\n" + "foo	456";
 }
 
 function screenInit(screen) {
@@ -228,7 +295,7 @@ function screenInit(screen) {
     offsetX + 17 + componentHeight + 210, 400,
     200, componentHeight,
     -1,
-    "Send it to Discord",
+    "Send to Discord",
     JavaWrapper.methodToJava(() => {
 
       if (DISCORD_WEBHOOK_URL) {
@@ -252,6 +319,19 @@ function screenInit(screen) {
     -1,
     "Clear",
     JavaWrapper.methodToJava(() => {
+      entryList = [];
+      screen.close();
+    })
+  );
+
+  screen.addButton(
+    offsetX + 17 + componentHeight + 620, 400,
+    200, componentHeight,
+    -1,
+    "Send to log",
+    JavaWrapper.methodToJava(() => {
+      const shopText = getSpreadsheetText();
+      console.log(shopText);
       entryList = [];
       screen.close();
     })
