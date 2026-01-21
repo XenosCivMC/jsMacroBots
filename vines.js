@@ -1,8 +1,8 @@
 // v0.1.0-alpha
 //
 const botname = "XenosVinesBot";
-const farmLength = 32;
-const farmLevels = 3;
+const farmLength = 80;
+const farmLevels = 2;
 // let farmLength = 5;
 // const farmRows = 2;
 
@@ -129,7 +129,7 @@ if (isRunning(botname)) {
   // const player = Player.getPlayer();
   const dir = getPlayerDirection();
   doVineRow(dir);
-  for (let level = 0; ((level < farmLevels - 1) && !isRunning(botname)); level++) {
+  for (let level = 0; ((level < farmLevels - 1) && isRunning(botname)); level++) {
     climbLadder(dir);
     dir.secondaryDir.x *= -1;
     dir.secondaryDir.z *= -1;
