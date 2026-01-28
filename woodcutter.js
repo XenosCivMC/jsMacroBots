@@ -14,11 +14,16 @@ var botname = "XenosWoodCutterBot";
 // var blocksBetweenTrees = 3;
 
 // regensburg
-var farmLength = 23;
-var farmWidth = 23;
-var treeType = "birch";
-var blocksBetweenTrees = 6;
+// var farmLength = 23;
+// var farmWidth = 23;
+// var treeType = "birch";
+// var blocksBetweenTrees = 6;
 
+// glenda
+var farmLength = 28;
+var farmWidth = 32;
+var treeType = "birch";
+var blocksBetweenTrees = 5;
 var doPlantSapling = false;
 
 // time to break a log in ticks
