@@ -168,7 +168,7 @@ function HandleReader(recvMessageEvent) {
       description: "Everything else",
       regex: /.*/,
       action: function(match) {
-          match = match[0].trim();
+        match = match[0].trim();
         if (enchants.includes(match)) {
           shopEntry.output.item += " " + match;
         }
@@ -231,7 +231,17 @@ function getSpreadsheetText() {
       } else
         outputItem = "CI " + outputItem;
     }
-    const entryText = `${inputItem}	${inputCount}	${outputItem}	${outputCount}	${entry.exchanges}`;
+
+    let timeString = "";
+    const date = new Date();
+
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    const yy = String(date.getFullYear()).slice(-2);
+
+    timeString = `${mm}/${dd}/${yy}`;
+
+    const entryText = `${inputItem}	${inputCount}	${outputItem}	${outputCount}	${entry.exchanges}	${timeString}`;
     shopText += `${entryText}\n`;
   });
 
