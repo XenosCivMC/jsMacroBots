@@ -4,7 +4,7 @@ var botname = "XenosWheatBot";
 // var farmLength = 16; //90
 // var farmWidth = 16; //98 + 27 = 125
 var farmLength = 54; //90
-var farmWidth = 128; //98 + 27 = 125
+var farmWidth = 279; //98 + 27 = 125
 
 // if this is set to true the player will drop the resources at the end of the line into a water chute.
 // it is set to do this every other line.
