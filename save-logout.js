@@ -7,7 +7,7 @@ function createButton(e) {
     const screen = e.screen;
     screen.addButton(
       378,
-      230 + 20 + 5,
+      230 + 40 + 5,
       204,
       20,
       "Save Logout",
