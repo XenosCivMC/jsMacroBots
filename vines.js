@@ -2,7 +2,7 @@
 //
 const botname = "XenosVinesBot";
 const farmLength = 80;
-const farmLevels = 2;
+const farmLevels = 4;
 // let farmLength = 5;
 // const farmRows = 2;
 
