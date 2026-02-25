@@ -24,11 +24,20 @@ var farmLength = 28;
 var farmWidth = 32;
 var treeType = "birch";
 var blocksBetweenTrees = 5;
-var doPlantSapling = false;
+var doPlantSapling = true;
+var chopTime = 13;
+
+// karydia oak
+// var farmLength = 16;
+// var farmWidth = 32;
+// var treeType = "birch";
+// var blocksBetweenTrees = 4;
+// var doPlantSapling = false;
+// var chopTime = 13;
 
 // time to break a log in ticks
 // stone axe is roughly 21
-var chopTime = 21;
+// var chopTime = 21;
 //
 // if this is set to true the player will drop the resources into a water chute.
 var doDropResources = false;
