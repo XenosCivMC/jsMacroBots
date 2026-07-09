@@ -20,12 +20,20 @@ var botname = "XenosWoodCutterBot";
 // var blocksBetweenTrees = 6;
 
 // glenda
-var farmLength = 28;
-var farmWidth = 32;
+// var farmLength = 28;
+// var farmWidth = 32;
+// var treeType = "birch";
+// var blocksBetweenTrees = 5;
+// var doPlantSapling = true;
+// var chopTime = 13;
+
+// zorweth ME oak farm
+var farmLength = 13;
+var farmWidth = 15;
 var treeType = "birch";
-var blocksBetweenTrees = 5;
+var blocksBetweenTrees = 4;
 var doPlantSapling = true;
-var chopTime = 13;
+var chopTime = 10;
 
 // karydia oak
 // var farmLength = 16;
