@@ -28,7 +28,7 @@ var botname = "XenosWoodCutterBot";
 // var chopTime = 13;
 
 // zorweth ME oak farm
-var farmLength = 13;
+var farmLength = 15;
 var farmWidth = 15;
 var treeType = "birch";
 var blocksBetweenTrees = 4;
