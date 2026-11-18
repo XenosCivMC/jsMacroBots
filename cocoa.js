@@ -1,6 +1,6 @@
 var botname = "XenosCocoaBot";
 
-const yLimit = 0;
+const yLimit = 93;
 const columnPositions = [
   { x: -2274, y: -4, z: -16203 },
   // { x: -2300, y: -8, z: -16230 },
@@ -93,17 +93,18 @@ function doCocoaColumn(pos) {
     Client.waitTick(globalTickWait);
     player.lookAt(direction);
     Client.waitTick(20);
-    KeyBind.keyBind('key.jump', true);
-    Client.waitTick(3);
-    KeyBind.keyBind('key.jump', false);
-    KeyBind.keyBind('key.sneak', true);
-    Client.waitTick(20);
+    // KeyBind.keyBind('key.jump', true);
+    // Client.waitTick(3);
+    // KeyBind.keyBind('key.jump', false);
+    // KeyBind.keyBind('key.sneak', true);
+    // Client.waitTick(20);
     KeyBind.keyBind('key.forward', true);
-    Client.waitTick(15); // untill you sneak to the end
-    KeyBind.keyBind('key.sneak', false);
+    Client.waitTick(4); // untill you sneak to the end
     KeyBind.keyBind('key.forward', false);
+    KeyBind.keyBind('key.backwards', true);
     Client.waitTick(globalTickWait);
     KeyBind.keyBind('key.forward', true);
+    KeyBind.keyBind('key.backwards', false);
     Client.waitTick(1); // just a little jump down the block
     KeyBind.keyBind('key.forward', false);
     Client.waitTick(globalTickWait);
@@ -115,6 +116,8 @@ function doCocoaColumn(pos) {
     player.lookAt(player.getYaw(), 80);
     Client.waitTick(globalTickWait);
     Client.waitTick(globalTickWait);
+    if (!isRunning(botname))
+      return;
     KeyBind.key("key.mouse.right", true);
 
     while (player.getPos().y > yLimit) {
@@ -137,15 +140,15 @@ function doCocoaColumn(pos) {
 toggleGlobalVar(botname);
 
 while (isRunning(botname)) {
-  columnPositions.forEach(columnPos => {
-    if (!isRunning(botname))
-      return;
-    doCocoaColumn(columnPos);
-  });
-  // const player = Player.getPlayer();
-  // let pos = player.getPos();
-  // pos.y += -1;
-  // doCocoaColumn(pos);
+  // columnPositions.forEach(columnPos => {
+  //   if (!isRunning(botname))
+  //     return;
+  //   doCocoaColumn(columnPos);
+  // });
+  const player = Player.getPlayer();
+  const pos = player.getPos();
+  pos.y += -1;
+  doCocoaColumn(pos);
   GlobalVars.putBoolean(botname, false);
   Client.waitTick(globalTickWait);
   if (!isRunning(botname)) {
