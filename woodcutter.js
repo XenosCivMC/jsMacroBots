@@ -23,17 +23,29 @@ var botname = "XenosWoodCutterBot";
 // var farmLength = 28;
 // var farmWidth = 32;
 // var treeType = "birch";
-// var blocksBetweenTrees = 5;
+// var blocksBetweenTreesX = 5;
+// var blocksBetweenTreesZ = 5;
 // var doPlantSapling = true;
-// var chopTime = 13;
+// var chopTime = 27;
 
-// zorweth ME oak farm
-var farmLength = 15;
-var farmWidth = 15;
+// zorweth spruce
+// var farmLength = 9;
+// var farmWidth = 8;
+// var treeType = "birch";
+// var blocksBetweenTrees = 4;
+// var blocksBetweenTreesX = 5;
+// var blocksBetweenTreesZ = 4;
+// var doPlantSapling = true;
+// var chopTime = 21;
+
+// arlington jungle
+var farmLength = 30;
+var farmWidth = 80;
 var treeType = "birch";
-var blocksBetweenTrees = 4;
+var blocksBetweenTreesX = 4;
+var blocksBetweenTreesZ = 4;
 var doPlantSapling = true;
-var chopTime = 10;
+var chopTime = 11;
 
 // karydia oak
 // var farmLength = 16;
@@ -42,6 +54,24 @@ var chopTime = 10;
 // var blocksBetweenTrees = 4;
 // var doPlantSapling = false;
 // var chopTime = 13;
+
+// IF warped stem
+// var farmLength = 44;
+// var farmWidth = 11;
+// var treeType = "birch";
+// var blocksBetweenTreesX = 2;
+// var blocksBetweenTreesZ = 2;
+// var doPlantSapling = false;
+// var chopTime = 21;
+
+// Xenos warped stem
+// var farmLength = 14;
+// var farmWidth = 11;
+// var treeType = "birch";
+// var blocksBetweenTreesX = 2;
+// var blocksBetweenTreesZ = 2;
+// var doPlantSapling = false;
+// var chopTime = 21;
 
 // time to break a log in ticks
 // stone axe is roughly 21
@@ -147,20 +177,20 @@ function lumberjackLoop() {
   // TODO: this if statement ... needs work.
   // when the player gets to the end of the line turn and go back
   if (
-    ((primaryDir.x != 0) && (currentPrimaryDir.x == primaryDir.x) && (startingPos.x == trueStartingPos.x + ((blocksBetweenTrees + 1) * currentPrimaryDir.x * (farmLength - 1))))
+    ((primaryDir.x != 0) && (currentPrimaryDir.x == primaryDir.x) && (startingPos.x == trueStartingPos.x + ((blocksBetweenTreesX + 1) * currentPrimaryDir.x * (farmLength - 1))))
     || ((primaryDir.x != 0) && (currentPrimaryDir.x != primaryDir.x) && (startingPos.x == trueStartingPos.x))
-    || ((primaryDir.z != 0) && (currentPrimaryDir.z == primaryDir.z) && (startingPos.z == trueStartingPos.z + ((blocksBetweenTrees + 1) * currentPrimaryDir.z * (farmLength - 1))))
+    || ((primaryDir.z != 0) && (currentPrimaryDir.z == primaryDir.z) && (startingPos.z == trueStartingPos.z + ((blocksBetweenTreesZ + 1) * currentPrimaryDir.z * (farmLength - 1))))
     || ((primaryDir.z != 0) && (currentPrimaryDir.z != primaryDir.z) && (startingPos.z == trueStartingPos.z))
   ) {
     // take a "step" to the secondary Direction
-    goalPosition.x += ((blocksBetweenTrees + 1) * secondaryDir.x);
-    goalPosition.z += ((blocksBetweenTrees + 1) * secondaryDir.z);
+    goalPosition.x += ((blocksBetweenTreesX + 1) * secondaryDir.x);
+    goalPosition.z += ((blocksBetweenTreesZ + 1) * secondaryDir.z);
     // negate direction
     currentPrimaryDir.x *= -1;
     currentPrimaryDir.z *= -1;
   } else {
-    goalPosition.x += ((blocksBetweenTrees + 1) * currentPrimaryDir.x);
-    goalPosition.z += ((blocksBetweenTrees + 1) * currentPrimaryDir.z);
+    goalPosition.x += ((blocksBetweenTreesX + 1) * currentPrimaryDir.x);
+    goalPosition.z += ((blocksBetweenTreesZ + 1) * currentPrimaryDir.z);
   }
 
   cutTree(goalPosition);
@@ -172,14 +202,14 @@ function lumberjackLoop() {
 
   } // if the player is here the script should finish
   var ultimateGoalPosition = { ...trueStartingPos };
-  ultimateGoalPosition.x += ((farmWidth - 1) * (blocksBetweenTrees + 1)) * secondaryDir.x;
-  ultimateGoalPosition.z += ((farmWidth - 1) * (blocksBetweenTrees + 1)) * secondaryDir.z;
+  ultimateGoalPosition.x += ((farmWidth - 1) * (blocksBetweenTreesX + 1)) * secondaryDir.x;
+  ultimateGoalPosition.z += ((farmWidth - 1) * (blocksBetweenTreesZ + 1)) * secondaryDir.z;
 
   // if farmLength is uneven ultimateGoal must be at the end of the line
   // because of alternating paths
   if (farmWidth % 2 == 1) {
-    ultimateGoalPosition.x += ((farmLength - 1) * (blocksBetweenTrees + 1)) * primaryDir.x;
-    ultimateGoalPosition.z += ((farmLength - 1) * (blocksBetweenTrees + 1)) * primaryDir.z;
+    ultimateGoalPosition.x += ((farmLength - 1) * (blocksBetweenTreesX + 1)) * primaryDir.x;
+    ultimateGoalPosition.z += ((farmLength - 1) * (blocksBetweenTreesZ + 1)) * primaryDir.z;
   }
 
   if (getDistance(currentPos, ultimateGoalPosition) < 0.3) {
